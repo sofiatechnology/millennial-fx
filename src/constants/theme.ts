@@ -1,65 +1,130 @@
+// theme.ts
+// Material 3 Color Scheme based on seed #769CDF
+// Generated for @expo/ui/jetpack-compose
+
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Light theme color palette
+ * Use with <Host seedColor="#769CDF" colorScheme="light">
  */
+export const lightTheme = {
+  primary: "#415F91",
+  onPrimary: "#FFFFFF",
+  primaryContainer: "#D6E3FF",
+  onPrimaryContainer: "#284777",
+  secondary: "#565F71",
+  onSecondary: "#FFFFFF",
+  secondaryContainer: "#DAE2F9",
+  onSecondaryContainer: "#3E4759",
+  tertiary: "#705575",
+  onTertiary: "#FFFFFF",
+  tertiaryContainer: "#FAD8FD",
+  onTertiaryContainer: "#573E5C",
+  error: "#BA1A1A",
+  onError: "#FFFFFF",
+  errorContainer: "#FFDAD6",
+  onErrorContainer: "#93000A",
+  background: "#F9F9FF",
+  onBackground: "#191C20",
+  surface: "#F9F9FF",
+  onSurface: "#191C20",
+  surfaceVariant: "#E0E2EC",
+  onSurfaceVariant: "#44474E",
+  outline: "#74777F",
+  outlineVariant: "#C4C6D0",
+  shadow: "#000000",
+  scrim: "#000000",
+  inverseSurface: "#2E3036",
+  inverseOnSurface: "#F0F0F7",
+  inversePrimary: "#AAC7FF",
+  primaryFixed: "#D6E3FF",
+  onPrimaryFixed: "#001B3E",
+  primaryFixedDim: "#AAC7FF",
+  onPrimaryFixedVariant: "#284777",
+  secondaryFixed: "#DAE2F9",
+  onSecondaryFixed: "#131C2B",
+  secondaryFixedDim: "#BEC6DC",
+  onSecondaryFixedVariant: "#3E4759",
+  tertiaryFixed: "#FAD8FD",
+  onTertiaryFixed: "#28132E",
+  tertiaryFixedDim: "#DDBCE0",
+  onTertiaryFixedVariant: "#573E5C",
+  surfaceDim: "#D9D9E0",
+  surfaceBright: "#F9F9FF",
+  surfaceContainerLowest: "#FFFFFF",
+  surfaceContainerLow: "#F3F3FA",
+  surfaceContainer: "#EDEDF4",
+  surfaceContainerHigh: "#E7E8EE",
+  surfaceContainerHighest: "#E2E2E9",
+  surfaceTint: "#415F91",
+};
 
-import '@/global.css';
+/**
+ * Dark theme color palette
+ * Use with <Host seedColor="#769CDF" colorScheme="dark">
+ */
+export const darkTheme = {
+  primary: "#AAC7FF",
+  onPrimary: "#0A305F",
+  primaryContainer: "#284777",
+  onPrimaryContainer: "#D6E3FF",
+  secondary: "#BEC6DC",
+  onSecondary: "#283141",
+  secondaryContainer: "#3E4759",
+  onSecondaryContainer: "#DAE2F9",
+  tertiary: "#DDBCE0",
+  onTertiary: "#3F2844",
+  tertiaryContainer: "#573E5C",
+  onTertiaryContainer: "#FAD8FD",
+  error: "#FFB4AB",
+  onError: "#690005",
+  errorContainer: "#93000A",
+  onErrorContainer: "#FFDAD6",
+  background: "#111318",
+  onBackground: "#E2E2E9",
+  surface: "#111318",
+  onSurface: "#E2E2E9",
+  surfaceVariant: "#44474E",
+  onSurfaceVariant: "#C4C6D0",
+  outline: "#8E9099",
+  outlineVariant: "#44474E",
+  shadow: "#000000",
+  scrim: "#000000",
+  inverseSurface: "#E2E2E9",
+  inverseOnSurface: "#2E3036",
+  inversePrimary: "#415F91",
+  primaryFixed: "#D6E3FF",
+  onPrimaryFixed: "#001B3E",
+  primaryFixedDim: "#AAC7FF",
+  onPrimaryFixedVariant: "#284777",
+  secondaryFixed: "#DAE2F9",
+  onSecondaryFixed: "#131C2B",
+  secondaryFixedDim: "#BEC6DC",
+  onSecondaryFixedVariant: "#3E4759",
+  tertiaryFixed: "#FAD8FD",
+  onTertiaryFixed: "#28132E",
+  tertiaryFixedDim: "#DDBCE0",
+  onTertiaryFixedVariant: "#573E5C",
+  surfaceDim: "#111318",
+  surfaceBright: "#37393E",
+  surfaceContainerLowest: "#0C0E13",
+  surfaceContainerLow: "#191C20",
+  surfaceContainer: "#1D2024",
+  surfaceContainerHigh: "#282A2F",
+  surfaceContainerHighest: "#33353A",
+  surfaceTint: "#AAC7FF",
+};
 
-import { Platform } from 'react-native';
+/**
+ * Helper to get the appropriate theme based on color scheme
+ * @param {('light' | 'dark')} scheme - 'light' or 'dark'
+ * @returns {Object} The corresponding theme object
+ */
+export const getTheme = (scheme) => {
+  return scheme === "dark" ? darkTheme : lightTheme;
+};
 
-export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
-} as const;
-
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
-
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
-
-export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
-} as const;
-
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;
+export default {
+  light: lightTheme,
+  dark: darkTheme,
+  getTheme,
+};
