@@ -1,15 +1,40 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import MoreVert from "@expo/material-symbols/more_vert.xml";
+import { Host, Icon, IconButton } from "@expo/ui/jetpack-compose";
+import { Stack, useRouter } from "expo-router";
+import { StatusBar } from "react-native";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+export default function Layout() {
+  const router = useRouter();
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <>
+      <StatusBar />
+      <Stack>
+        <Stack.Screen
+          name="index"
+          options={{
+            title: "Lot Size Calculator",
+            headerRight: () => (
+              <Host matchContents>
+                <IconButton onClick={() => router.push("/about")}>
+                  <Icon
+                    source={MoreVert}
+                    size={24}
+                    contentDescription="More options to about screen"
+                  />
+                </IconButton>
+              </Host>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="about"
+          options={{
+            title: "About Millennial FX",
+            presentation: "modal",
+          }}
+        />
+      </Stack>
+    </>
   );
 }
