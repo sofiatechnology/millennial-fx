@@ -326,9 +326,7 @@ export default function HomeScreen() {
                 ]}
               >
                 <Column modifiers={[padding(16, 16, 16, 16)]}>
-                  <Text style={{ typography: "titleLarge" }}>Calculation Result</Text>
-
-                  <Spacer modifiers={[height(12)]} />
+                  <Spacer modifiers={[height(16)]} />
 
                   <Column verticalArrangement={{ spacedBy: 12 }} modifiers={[fillMaxWidth()]}>
                     <ResultRow
