@@ -1,3 +1,4 @@
+import { ResultRow } from "@/components/result-row";
 import { seedColor, useAppTheme } from '@/constants/theme';
 import {
   BasicAlertDialog,
@@ -163,29 +164,6 @@ function ValidatedField({
         </Text>
       )}
     </Column>
-  );
-}
-
-function ResultRow({
-  label,
-  value,
-  labelColor,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  labelColor: string;
-  valueColor: string;
-}) {
-  return (
-    <Row horizontalArrangement="spaceBetween" modifiers={[fillMaxWidth()]}>
-      <Text color={labelColor} style={{ typography: "bodyMedium", fontWeight: "500" }}>
-        {label}
-      </Text>
-      <Text color={valueColor} style={{ typography: "bodyMedium", fontWeight: "700" }}>
-        {value}
-      </Text>
-    </Row>
   );
 }
 

@@ -126,7 +126,7 @@ export const darkColors = {
   surfaceContainer: '#1E2023',
   surfaceContainerHigh: '#282A2D',
   surfaceContainerHighest: '#333538',
-};
+} as const;
 
 export type ThemeColors = typeof lightColors;
 export type ColorSchemeChoice = 'light' | 'dark' | 'system';
@@ -146,20 +146,30 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const systemScheme = useColorScheme() ?? 'light';
+  const systemScheme = useColorScheme();
   const [choice, setChoice] = useState<ColorSchemeChoice>('system');
 
-  const scheme: 'light' | 'dark' = choice === 'system' ? systemScheme : choice;
+  // Fix: Ensure we only use 'light' or 'dark' by falling back to 'light'
+  const scheme: 'light' | 'dark' = 
+    choice === 'system' 
+      ? (systemScheme === 'dark' ? 'dark' : 'light')  // Handle null, 'unspecified', etc.
+      : choice;
+
+  // Fix: Use type assertion to tell TypeScript this is definitely ThemeColors
+  const colors = useMemo<ThemeColors>(
+    () => (scheme === 'dark' ? darkColors : lightColors) as ThemeColors,
+    [scheme]
+  );
 
   const value = useMemo<ThemeContextValue>(
     () => ({
-      colors: scheme === 'dark' ? darkColors : lightColors,
+      colors,
       scheme,
       seedColor,
       choice,
       setChoice,
     }),
-    [scheme, choice]
+    [colors, scheme, choice]
   );
 
   return React.createElement(ThemeContext.Provider, { value }, children);
