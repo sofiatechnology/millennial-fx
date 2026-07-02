@@ -1,5 +1,9 @@
-import Home from "@expo/material-symbols/home.xml";
-// import { Ionicons } from "@expo/vector-icons";
+
+import { default as BarChart, default as Calculator, default as ShieldCheck } from "@expo/material-symbols/bar_chart.xml";
+import SwapHoriz from "@expo/material-symbols/swap_horiz.xml";
+import TrendingUp from "@expo/material-symbols/trending_up.xml";
+import Warning from "@expo/material-symbols/warning.xml";
+
 import { Icon } from "@expo/ui/jetpack-compose";
 import { Stack } from "expo-router";
 import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -80,8 +84,7 @@ export default function AboutScreen() {
         {/* Hero */}
         <View style={styles.hero}>
           <View style={styles.heroIcon}>
-            <Icon source={Home} contentDescription="Home" />
-            {/* <Ionicons name="analytics" size={32} color="#1D4ED8" /> */}
+            <Icon source={Calculator} contentDescription="Calculator" />
           </View>
           <Text style={styles.heroTitle}>Lot Size Calculator</Text>
           <Text style={styles.heroVersion}>Version 1.0.0</Text>
@@ -97,7 +100,24 @@ export default function AboutScreen() {
             style={[styles.card, { borderLeftColor: s.color }]}
           >
             <View style={[styles.iconBadge, { backgroundColor: s.bg }]}>
-              <Icon source={Home} contentDescription="Home" />
+              <Icon
+                source={
+                  s.icon === "calculator-outline"
+                    ? Calculator
+                    : s.icon === "shield-checkmark-outline"
+                      ? ShieldCheck
+                      : s.icon === "trending-up-outline"
+                        ? TrendingUp
+                        : s.icon === "bar-chart-outline"
+                          ? BarChart
+                          : s.icon === "swap-horizontal-outline"
+                            ? SwapHoriz
+                            : s.icon === "warning-outline"
+                              ? Warning
+                              : Calculator
+                }
+                contentDescription={s.title}
+              />
               {/* <Ionicons name={s.icon} size={20} color={s.color} /> */}
             </View>
             <Text style={styles.cardTitle}>{s.title}</Text>

@@ -1,14 +1,13 @@
+import { ThemeProvider } from '@/constants/theme';
 import MoreVert from "@expo/material-symbols/more_vert.xml";
 import { Host, Icon, IconButton } from "@expo/ui/jetpack-compose";
 import { Stack, useRouter } from "expo-router";
-import { StatusBar } from "react-native";
 
 export default function Layout() {
   const router = useRouter();
 
   return (
-    <>
-      <StatusBar />
+    <ThemeProvider>
       <Stack>
         <Stack.Screen
           name="index"
@@ -35,6 +34,6 @@ export default function Layout() {
           }}
         />
       </Stack>
-    </>
+    </ThemeProvider>
   );
 }

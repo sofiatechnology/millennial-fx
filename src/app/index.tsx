@@ -1,4 +1,4 @@
-import Home from "@expo/material-symbols/home.xml";
+import { seedColor, useAppTheme } from '@/constants/theme';
 import {
   BasicAlertDialog,
   Button,
@@ -7,13 +7,28 @@ import {
   ExposedDropdownMenu,
   ExposedDropdownMenuBox,
   Host,
-  Icon,
+  ObservableState,
   OutlinedButton,
   OutlinedTextField,
   Row,
+  Spacer,
+  Surface,
   Text,
+  TextButton,
+  useNativeState,
 } from "@expo/ui/jetpack-compose";
-import { fillMaxWidth, menuAnchor } from "@expo/ui/jetpack-compose/modifiers";
+import {
+  align,
+  clip,
+  fillMaxWidth,
+  height,
+  menuAnchor,
+  padding,
+  paddingAll,
+  Shapes,
+  wrapContentHeight,
+  wrapContentWidth,
+} from "@expo/ui/jetpack-compose/modifiers";
 import { useCallback, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -46,11 +61,22 @@ const CURRENCY_PAIRS = [
   "GBP/JPY",
 ];
 
-// ─── Reusable Dropdown ───────────────────────────────────────────────────────
+const DEFAULTS = {
+  currencyPair: "EUR/USD",
+  accountBalance: "100000",
+  riskPercent: "1",
+  stopLossPips: "20",
+};
 
+// ─── Reusable Dropdown ───────────────────────────────────────────────────────
+// The anchor field is bound to a useNativeState observable, per the
+// ExposedDropdownMenuBox docs: "The anchor is a read-only TextField bound to
+// a useNativeState observable. Update that observable in each item's onClick
+// to reflect the selected value." A plain string prop doesn't reliably
+// reflect selection because Compose expects to read/write .value directly.
 interface DropdownProps {
   label: string;
-  selectedLabel: string;
+  selectedLabel: ObservableState<string>;
   options: string[];
   onSelect: (value: string) => void;
 }
@@ -100,14 +126,82 @@ function LabeledDropdown({
   );
 }
 
+// A labeled field bound to a useNativeState observable + inline error.
+interface FieldProps {
+  label: string;
+  state: ObservableState<string>;
+  keyboardType: "number" | "decimal";
+  error?: string;
+  errorColor: string;
+}
+
+function ValidatedField({
+  label,
+  state,
+  keyboardType,
+  error,
+  errorColor,
+}: FieldProps) {
+  return (
+    <Column verticalArrangement={{ spacedBy: 4 }} modifiers={[fillMaxWidth()]}>
+      <OutlinedTextField
+        value={state}
+        keyboardOptions={{ keyboardType }}
+        modifiers={[fillMaxWidth()]}
+      >
+        <OutlinedTextField.Label>
+          <Text>{label}</Text>
+        </OutlinedTextField.Label>
+      </OutlinedTextField>
+      {error && (
+        <Text
+          color={errorColor}
+          style={{ typography: "bodySmall" }}
+          modifiers={[padding(4, 0, 0, 0)]}
+        >
+          {error}
+        </Text>
+      )}
+    </Column>
+  );
+}
+
+function ResultRow({
+  label,
+  value,
+  labelColor,
+  valueColor,
+}: {
+  label: string;
+  value: string;
+  labelColor: string;
+  valueColor: string;
+}) {
+  return (
+    <Row horizontalArrangement="spaceBetween" modifiers={[fillMaxWidth()]}>
+      <Text color={labelColor} style={{ typography: "bodyMedium", fontWeight: "500" }}>
+        {label}
+      </Text>
+      <Text color={valueColor} style={{ typography: "bodyMedium", fontWeight: "700" }}>
+        {value}
+      </Text>
+    </Row>
+  );
+}
+
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-  const [currencyPair, setCurrencyPair] = useState("EUR/USD");
+  const { colors, scheme } = useAppTheme();
+
+  // Native-state-backed fields — typing and selection happen on the
+  // Compose side; we only read .value when we actually need it (validate,
+  // calculate, reset).
+  const currencyPair = useNativeState(DEFAULTS.currencyPair);
+  const accountBalance = useNativeState(DEFAULTS.accountBalance);
+  const riskPercent = useNativeState(DEFAULTS.riskPercent);
+  const stopLossPips = useNativeState(DEFAULTS.stopLossPips);
   const [usdPrice] = useState("1.00000");
-  const [accountBalance, setAccountBalance] = useState("100000");
-  const [riskPercent, setRiskPercent] = useState("1");
-  const [stopLossPips, setStopLossPips] = useState("20");
 
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -115,16 +209,15 @@ export default function HomeScreen() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!accountBalance || isNaN(+accountBalance) || +accountBalance <= 0)
+    const balance = accountBalance.value;
+    const risk = riskPercent.value;
+    const stopLoss = stopLossPips.value;
+
+    if (!balance || isNaN(+balance) || +balance <= 0)
       e.accountBalance = "Enter a valid account balance";
-    if (
-      !riskPercent ||
-      isNaN(+riskPercent) ||
-      +riskPercent <= 0 ||
-      +riskPercent > 100
-    )
+    if (!risk || isNaN(+risk) || +risk <= 0 || +risk > 100)
       e.riskPercent = "Risk must be between 0 and 100";
-    if (!stopLossPips || isNaN(+stopLossPips) || +stopLossPips <= 0)
+    if (!stopLoss || isNaN(+stopLoss) || +stopLoss <= 0)
       e.stopLossPips = "Enter a valid stop loss";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -133,147 +226,101 @@ export default function HomeScreen() {
   const handleCalculate = useCallback(() => {
     if (!validate()) return;
     const price = parseFloat(usdPrice);
-    const pipValue = currencyPair.includes("JPY")
+    const pair = currencyPair.value;
+    const pipValue = pair.includes("JPY")
       ? (0.01 * 100_000) / price
       : (0.0001 * 100_000) / price;
 
     setResult(
       calculateLotSize(
-        parseFloat(accountBalance),
-        parseFloat(riskPercent),
-        parseFloat(stopLossPips),
+        parseFloat(accountBalance.value),
+        parseFloat(riskPercent.value),
+        parseFloat(stopLossPips.value),
         pipValue,
       ),
     );
     setIsAlertOpen(true);
-  }, [accountBalance, riskPercent, stopLossPips, usdPrice, currencyPair]);
+    // useNativeState values live outside React state, so they don't belong
+    // in the dependency array — reading .value at call time is intentional.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usdPrice]);
 
   const handleReset = () => {
-    setCurrencyPair("EUR/USD");
-    setAccountBalance("100000");
-    setRiskPercent("1");
-    setStopLossPips("20");
+    currencyPair.value = DEFAULTS.currencyPair;
+    accountBalance.value = DEFAULTS.accountBalance;
+    riskPercent.value = DEFAULTS.riskPercent;
+    stopLossPips.value = DEFAULTS.stopLossPips;
     setResult(null);
     setErrors({});
     setIsAlertOpen(false);
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <Host
         matchContents={{ vertical: true }}
         style={{ width: "100%" }}
-        seedColor={"#35668E"}
+        colorScheme={scheme}
+        seedColor={seedColor}
       >
-        <Column modifiers={[fillMaxWidth()]}>
-          {/* FIXED: Adjusted design tokens to match verified Expo UI text style schemas */}
-          <Text style={{ typography: "bodyMedium", color: "#125df3" }}>
+        <Column
+          verticalArrangement={{ spacedBy: 16 }}
+          modifiers={[fillMaxWidth(), paddingAll(16)]}
+        >
+          <Text color={colors.primary} style={{ typography: "bodyMedium" }}>
             Determine the exact currency units to buy or sell per trade, based
             on your risk rules and account balance.
           </Text>
 
-          {/* Currency Dropdown */}
           <LabeledDropdown
             label="Currency Pair"
             selectedLabel={currencyPair}
             options={CURRENCY_PAIRS}
-            onSelect={setCurrencyPair}
+            onSelect={(value) => {
+              currencyPair.value = value;
+            }}
           />
 
-          {/* Account Balance */}
-          <Column modifiers={[fillMaxWidth()]}>
-            <OutlinedTextField
-              value={accountBalance}
-              onValueChange={setAccountBalance}
-              keyboardOptions={{ keyboardType: "number" }}
-              modifiers={[fillMaxWidth()]}
-            >
-              <OutlinedTextField.Label>
-                <Text>Account Balance</Text>
-              </OutlinedTextField.Label>
-            </OutlinedTextField>
-            {errors.accountBalance && (
-              <Text
-                style={{
-                  typography: "bodySmall",
-                  color: "#B3261E",
-                  paddingLeft: 4,
-                }}
-              >
-                {errors.accountBalance}
-              </Text>
-            )}
-          </Column>
+          <ValidatedField
+            label="Account Balance"
+            state={accountBalance}
+            keyboardType="number"
+            error={errors.accountBalance}
+            errorColor={colors.error}
+          />
 
-          {/* Risk Percentage */}
-          <Column
-            verticalArrangement={{ spacedBy: 4 }}
-            modifiers={[fillMaxWidth()]}
-          >
-            <OutlinedTextField
-              value={riskPercent}
-              onValueChange={setRiskPercent}
-              keyboardOptions={{ keyboardType: "decimal" }}
-              modifiers={[fillMaxWidth()]}
-            >
-              <OutlinedTextField.Label>
-                <Text>Risk Percentage</Text>
-              </OutlinedTextField.Label>
-            </OutlinedTextField>
-            {errors.riskPercent && (
-              <Text
-                style={{
-                  typography: "bodySmall",
-                  color: "#B3261E",
-                  paddingLeft: 4,
-                }}
-              >
-                {errors.riskPercent}
-              </Text>
-            )}
-          </Column>
+          <ValidatedField
+            label="Risk Percentage"
+            state={riskPercent}
+            keyboardType="decimal"
+            error={errors.riskPercent}
+            errorColor={colors.error}
+          />
 
-          {/* Stop Loss Pips */}
-          <Column
-            verticalArrangement={{ spacedBy: 4 }}
-            modifiers={[fillMaxWidth()]}
-          >
-            <OutlinedTextField
-              value={stopLossPips}
-              onValueChange={setStopLossPips}
-              keyboardOptions={{ keyboardType: "number" }}
-              modifiers={[fillMaxWidth()]}
-            >
-              <OutlinedTextField.Label>
-                <Text>Stop Loss Pips</Text>
-              </OutlinedTextField.Label>
-            </OutlinedTextField>
-            {errors.stopLossPips && (
-              <Text
-                style={{
-                  typography: "bodySmall",
-                  color: "#B3261E",
-                  paddingLeft: 4,
-                }}
-              >
-                {errors.stopLossPips}
-              </Text>
-            )}
-          </Column>
+          <ValidatedField
+            label="Stop Loss Pips"
+            state={stopLossPips}
+            keyboardType="number"
+            error={errors.stopLossPips}
+            errorColor={colors.error}
+          />
 
-          {/* Actions Button */}
-          <Button modifiers={[fillMaxWidth()]} onPress={handleCalculate}>
+          {/* Button variants (Button, OutlinedButton, FilledTonalButton,
+              ElevatedButton, TextButton) fire on `onClick`, not `onPress`.
+              That mismatch is why Calculate/Reset previously did nothing. */}
+          <Button modifiers={[fillMaxWidth()]} onClick={handleCalculate}>
             <Text>Calculate</Text>
           </Button>
 
-          {/* Disclaimer Warning */}
-          <Row
-            horizontalArrangement={{ spacedBy: 12 }}
-            modifiers={[fillMaxWidth()]}
-          >
-            <Icon source={Home} contentDescription="Warning" />
+          <OutlinedButton modifiers={[fillMaxWidth()]} onClick={handleReset}>
+            <Text>Reset</Text>
+          </OutlinedButton>
+
+          <Row horizontalArrangement={{ spacedBy: 12 }} modifiers={[fillMaxWidth()]}>
             <Text
-              style={{ typography: "bodySmall", color: "#9CA3AF", flex: 1 }}
+              color={colors.onSurfaceVariant}
+              style={{ typography: "bodySmall" }}
+              modifiers={[fillMaxWidth()]}
             >
               Results are estimates. Always verify with your broker before
               placing trades.
@@ -281,134 +328,67 @@ export default function HomeScreen() {
           </Row>
 
           {/* ─── Material 3 Basic Alert Dialog ───────────────────────────────── */}
-          {result && (
-            <BasicAlertDialog
-              visible={isAlertOpen}
-              onDismissRequest={() => setIsAlertOpen(false)}
-            >
-              <Column verticalArrangement={{ spacedBy: 16 }}>
-                <Text
-                  style={{
-                    typography: "titleLarge",
-                    color: "#111827",
-                    fontWeight: "600",
-                  }}
-                >
-                  Calculation Result
-                </Text>
+          {/*
+            This follows the BasicAlertDialog docs example exactly:
+            https://docs.expo.dev/versions/latest/sdk/ui/jetpack-compose/basicalertdialog/
+            Surface(tonalElevation, modifiers: [wrapContentWidth, wrapContentHeight,
+            clip(Shapes.RoundedCorner(28))]) > Column(padding(16,16,16,16)) >
+            supportive content > Spacer(height 24) > TextButton(align('centerEnd')).
+            One button only — no custom colors/shape props beyond what the
+            example uses, so this renders as the plain native dialog design.
+          */}
+          {isAlertOpen && (
+            <BasicAlertDialog onDismissRequest={() => setIsAlertOpen(false)}>
+              <Surface
+                tonalElevation={6}
+                modifiers={[
+                  wrapContentWidth(),
+                  wrapContentHeight(),
+                  clip(Shapes.RoundedCorner(28)),
+                ]}
+              >
+                <Column modifiers={[padding(16, 16, 16, 16)]}>
+                  <Text style={{ typography: "titleLarge" }}>Calculation Result</Text>
 
-                <Column
-                  verticalArrangement={{ spacedBy: 12 }}
-                  modifiers={[fillMaxWidth()]}
-                >
-                  <Row
-                    horizontalArrangement={{ spaceBetween: true }}
-                    modifiers={[fillMaxWidth()]}
-                  >
-                    <Text
-                      style={{
-                        typography: "bodyMedium",
-                        color: "#4B5563",
-                        fontWeight: "500",
-                      }}
-                    >
-                      Lot Size:
-                    </Text>
-                    <Text
-                      style={{
-                        typography: "bodyMedium",
-                        color: "#111827",
-                        fontWeight: "700",
-                      }}
-                    >
-                      {result.lotSize.toFixed(2)}
-                    </Text>
-                  </Row>
-                  <Row
-                    horizontalArrangement={{ spaceBetween: true }}
-                    modifiers={[fillMaxWidth()]}
-                  >
-                    <Text
-                      style={{
-                        typography: "bodyMedium",
-                        color: "#4B5563",
-                        fontWeight: "500",
-                      }}
-                    >
-                      Units to Trade:
-                    </Text>
-                    <Text
-                      style={{
-                        typography: "bodyMedium",
-                        color: "#111827",
-                        fontWeight: "700",
-                      }}
-                    >
-                      {result.unitsToTrade.toLocaleString()}
-                    </Text>
-                  </Row>
-                  <Row
-                    horizontalArrangement={{ spaceBetween: true }}
-                    modifiers={[fillMaxWidth()]}
-                  >
-                    <Text
-                      style={{
-                        typography: "bodyMedium",
-                        color: "#4B5563",
-                        fontWeight: "500",
-                      }}
-                    >
-                      Risk Amount:
-                    </Text>
-                    <Text
-                      style={{
-                        typography: "bodyMedium",
-                        color: "#111827",
-                        fontWeight: "700",
-                      }}
-                    >
-                      ${result.riskAmount.toLocaleString()}
-                    </Text>
-                  </Row>
-                  <Row
-                    horizontalArrangement={{ spaceBetween: true }}
-                    modifiers={[fillMaxWidth()]}
-                  >
-                    <Text
-                      style={{
-                        typography: "bodyMedium",
-                        color: "#4B5563",
-                        fontWeight: "500",
-                      }}
-                    >
-                      Pip Value / Lot:
-                    </Text>
-                    <Text
-                      style={{
-                        typography: "bodyMedium",
-                        color: "#111827",
-                        fontWeight: "700",
-                      }}
-                    >
-                      ${result.pipValue.toFixed(2)}
-                    </Text>
-                  </Row>
-                </Column>
+                  <Spacer modifiers={[height(12)]} />
 
-                {/* Modal Actions Footer */}
-                <Row
-                  horizontalArrangement={{ spacedBy: 8 }}
-                  style={{ justifyContent: "flex-end" }}
-                  modifiers={[fillMaxWidth()]}
-                >
-                  <OutlinedButton onPress={handleReset}>
-                    <Text>Reset Form</Text>
-                  </OutlinedButton>
-                  <Button onPress={() => setIsAlertOpen(false)}>
+                  <Column verticalArrangement={{ spacedBy: 12 }} modifiers={[fillMaxWidth()]}>
+                    <ResultRow
+                      label="Lot Size:"
+                      value={result ? result.lotSize.toFixed(2) : "—"}
+                      labelColor={colors.onSurfaceVariant}
+                      valueColor={colors.onSurface}
+                    />
+                    <ResultRow
+                      label="Units to Trade:"
+                      value={result ? result.unitsToTrade.toLocaleString() : "—"}
+                      labelColor={colors.onSurfaceVariant}
+                      valueColor={colors.onSurface}
+                    />
+                    <ResultRow
+                      label="Risk Amount:"
+                      value={result ? `$${result.riskAmount.toLocaleString()}` : "—"}
+                      labelColor={colors.onSurfaceVariant}
+                      valueColor={colors.onSurface}
+                    />
+                    <ResultRow
+                      label="Pip Value / Lot:"
+                      value={result ? `$${result.pipValue.toFixed(2)}` : "—"}
+                      labelColor={colors.onSurfaceVariant}
+                      valueColor={colors.onSurface}
+                    />
+                  </Column>
+
+                  <Spacer modifiers={[height(24)]} />
+
+                  <TextButton
+                    onClick={() => setIsAlertOpen(false)}
+                    modifiers={[align("centerEnd")]}
+                  >
                     <Text>Close</Text>
-                  </Button>
-                </Row>
-              </Column>
+                  </TextButton>
+                </Column>
+              </Surface>
             </BasicAlertDialog>
           )}
         </Column>
