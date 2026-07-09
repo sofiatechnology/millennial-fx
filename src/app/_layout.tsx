@@ -1,3 +1,4 @@
+// _layout.tsx
 import { ThemeProvider } from '@/constants/theme';
 import MoreVert from "@expo/material-symbols/more_vert.xml";
 import { Host, Icon, IconButton } from "@expo/ui/jetpack-compose";
