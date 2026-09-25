@@ -36,7 +36,6 @@ function ThemedApp() {
           <Stack.Screen name="index" />
           <Stack.Screen name="news" />
           <Stack.Screen name="settings" />
-          <Stack.Screen name="about" />
         </Stack>
       </AppShell>
     </PaperProvider>

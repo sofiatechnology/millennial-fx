@@ -192,6 +192,9 @@ function stripHtml(value: string): string {
     .replace(/&amp;/gi, '&')
     .replace(/&#39;|&apos;/gi, "'")
     .replace(/&quot;/gi, '"')
+    .replace(/&#x91;|&#x92;/gi, "'")
+    .replace(/&#x93;|&#x94;/gi, '"')
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
     .replace(/\s+/g, ' ')
     .trim();
 }

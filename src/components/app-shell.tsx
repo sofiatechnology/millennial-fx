@@ -1,8 +1,8 @@
 import { MaterialSymbol } from '@/components/material-symbol';
 import {
-  destinationForPath,
   destinations,
   isDestinationActive,
+  pageTitle,
 } from '@/constants/navigation';
 import {
   layout,
@@ -45,12 +45,15 @@ export function AppShell({ children }: AppShellProps) {
   const [query, setQuery] = useState('');
 
   const navLayout = navigationLayout(width);
-  const destination = destinationForPath(pathname);
   const showSideNav = navLayout !== 'bar';
 
   const openDestination = (href: (typeof destinations)[number]['href']) => {
     if (pathname === '/news' && href !== '/news') {
       setQuery('');
+    }
+    if (href === '/settings' && pathname.startsWith('/settings/') ) {
+      router.replace('/settings');
+      return;
     }
     if (!isDestinationActive(pathname, href)) {
       router.push(href);
@@ -74,7 +77,10 @@ export function AppShell({ children }: AppShellProps) {
           style={{ backgroundColor: colors.surface, ...motionStyle('background-color') }}
           statusBarHeight={insets.top}
         >
-          <Appbar.Content title={destination.title} />
+          {pathname.startsWith('/settings/') ? (
+            <Appbar.BackAction accessibilityLabel="Back" onPress={() => router.back()} />
+          ) : null}
+          <Appbar.Content title={pageTitle(pathname)} />
           <Appbar.Action
             icon={scheme === 'dark' ? 'white-balance-sunny' : 'weather-night'}
             accessibilityLabel={
