@@ -1,25 +1,39 @@
 /**
  * theme.ts
- * Single source of truth for app theming, generated from the
- * Material Theme Builder export (seed #35668E).
+ * Material Design 3 tokens for Millennial FX.
  *
- * - `lightColors` / `darkColors` -> use in React Native styles.
- * - `buildPaperTheme()` -> Material 3 theme for React Native Paper.
- * - `useAppTheme()` -> hook that returns the right palette for the
- *   current color scheme, with manual override support.
+ * Color hex values live only here (and the matching CSS custom properties
+ * in src/global.css). Components read semantic roles — primary, surface
+ * containers, on-surface, outline — and light/dark mode swaps this object.
+ *
+ * Seed color: #35668E (Material Theme Builder).
  */
 
-import React, { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
-import { useColorScheme } from 'react-native';
-import { MD3DarkTheme, MD3LightTheme, type MD3Theme } from 'react-native-paper';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import { Platform, useColorScheme, type ViewStyle } from 'react-native';
+import {
+  configureFonts,
+  MD3DarkTheme,
+  MD3LightTheme,
+  type MD3Theme,
+} from 'react-native-paper';
 
 export const seedColor = '#35668E';
 
-// -----------------------------------------------------------------------
-// 2. Palettes pulled straight from your Material Theme Builder export
-//    (light + dark schemes; add light-medium-contrast / dark-high-contrast
-//    etc. the same way if you need accessibility variants later)
-// -----------------------------------------------------------------------
+const brandFont =
+  Platform.select({
+    web: 'Inter, Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif',
+    ios: 'System',
+    default: 'sans-serif',
+  }) ?? 'sans-serif';
+
 export const lightColors = {
   primary: '#174E75',
   onPrimary: '#FFFFFF',
@@ -125,6 +139,108 @@ export const darkColors = {
 export type ThemeColors = typeof lightColors;
 export type ColorSchemeChoice = 'light' | 'dark' | 'system';
 
+/** M3 corner scale. Cards, drawers, and dialogs use extraLarge. Controls use full. */
+export const shape = {
+  none: 0,
+  extraSmall: 4,
+  small: 8,
+  medium: 12,
+  large: 16,
+  extraLarge: 28,
+  full: 9999,
+} as const;
+
+/** M3 standard easing and durations (200–400ms). */
+export const motion = {
+  durationShort: 200,
+  durationMedium: 300,
+  durationLong: 400,
+  easingStandard: 'cubic-bezier(0.2, 0.0, 0, 1.0)',
+} as const;
+
+/** M3 window-size classes and navigation widths. */
+export const layout = {
+  compact: 600,
+  expanded: 1240,
+  drawerWidth: 360,
+  railWidth: 80,
+  navBarHeight: 80,
+} as const;
+
+export type NavigationLayout = 'bar' | 'rail' | 'drawer';
+
+export function navigationLayout(width: number): NavigationLayout {
+  if (width < layout.compact) return 'bar';
+  if (width <= layout.expanded) return 'rail';
+  return 'drawer';
+}
+
+type TypeRole = {
+  fontFamily: string;
+  fontWeight: '400' | '500';
+  fontSize: number;
+  lineHeight: number;
+  letterSpacing: number;
+};
+
+/** M3 typescale. Sizes, weights, line height, and tracking match the spec. */
+export const typeScale: Record<string, TypeRole> = {
+  displayLarge: { fontFamily: brandFont, fontWeight: '400', fontSize: 57, lineHeight: 64, letterSpacing: -0.25 },
+  displayMedium: { fontFamily: brandFont, fontWeight: '400', fontSize: 45, lineHeight: 52, letterSpacing: 0 },
+  displaySmall: { fontFamily: brandFont, fontWeight: '400', fontSize: 36, lineHeight: 44, letterSpacing: 0 },
+  headlineLarge: { fontFamily: brandFont, fontWeight: '400', fontSize: 32, lineHeight: 40, letterSpacing: 0 },
+  headlineMedium: { fontFamily: brandFont, fontWeight: '400', fontSize: 28, lineHeight: 36, letterSpacing: 0 },
+  headlineSmall: { fontFamily: brandFont, fontWeight: '400', fontSize: 24, lineHeight: 32, letterSpacing: 0 },
+  titleLarge: { fontFamily: brandFont, fontWeight: '400', fontSize: 22, lineHeight: 28, letterSpacing: 0 },
+  titleMedium: { fontFamily: brandFont, fontWeight: '500', fontSize: 16, lineHeight: 24, letterSpacing: 0.15 },
+  titleSmall: { fontFamily: brandFont, fontWeight: '500', fontSize: 14, lineHeight: 20, letterSpacing: 0.1 },
+  bodyLarge: { fontFamily: brandFont, fontWeight: '400', fontSize: 16, lineHeight: 24, letterSpacing: 0.5 },
+  bodyMedium: { fontFamily: brandFont, fontWeight: '400', fontSize: 14, lineHeight: 20, letterSpacing: 0.25 },
+  bodySmall: { fontFamily: brandFont, fontWeight: '400', fontSize: 12, lineHeight: 16, letterSpacing: 0.4 },
+  labelLarge: { fontFamily: brandFont, fontWeight: '500', fontSize: 14, lineHeight: 20, letterSpacing: 0.1 },
+  labelMedium: { fontFamily: brandFont, fontWeight: '500', fontSize: 12, lineHeight: 16, letterSpacing: 0.5 },
+  labelSmall: { fontFamily: brandFont, fontWeight: '500', fontSize: 11, lineHeight: 16, letterSpacing: 0.5 },
+};
+
+function paperFonts() {
+  return configureFonts({ config: typeScale });
+}
+
+/** Web-only transition. Native relies on Paper's ripple and state layers. */
+export function motionStyle(property: string): ViewStyle {
+  if (Platform.OS !== 'web') return {};
+  return {
+    transitionProperty: property,
+    transitionDuration: `${motion.durationMedium}ms`,
+    transitionTimingFunction: motion.easingStandard,
+  } as ViewStyle;
+}
+
+/** Filled card: tonal surface, no shadow. */
+export function filledSurfaceStyle(colors: ThemeColors): ViewStyle {
+  return {
+    backgroundColor: colors.surfaceContainerHigh,
+    borderRadius: shape.extraLarge,
+    boxShadow: 'none',
+  };
+}
+
+/** Outlined card: lowest container plus a 1px outline-variant stroke. */
+export function outlinedSurfaceStyle(colors: ThemeColors): ViewStyle {
+  return {
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: shape.extraLarge,
+    borderWidth: 1,
+    borderColor: colors.outlineVariant,
+    boxShadow: 'none',
+  };
+}
+
+/** Pill controls: buttons, chips, search, FABs. */
+export const pillStyle: ViewStyle = {
+  borderRadius: shape.full,
+};
+
 /** Map the app palette onto React Native Paper's Material 3 theme. */
 export function buildPaperTheme(
   scheme: 'light' | 'dark',
@@ -134,6 +250,8 @@ export function buildPaperTheme(
 
   return {
     ...base,
+    roundness: shape.extraSmall,
+    fonts: paperFonts(),
     colors: {
       ...base.colors,
       primary: colors.primary,
@@ -177,10 +295,6 @@ export function buildPaperTheme(
   };
 }
 
-// -----------------------------------------------------------------------
-// 3. Context + provider so any screen/component can read the theme and
-//    a settings screen can force light/dark instead of following system
-// -----------------------------------------------------------------------
 type ThemeContextValue = {
   colors: ThemeColors;
   scheme: 'light' | 'dark';
@@ -195,17 +309,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme();
   const [choice, setChoice] = useState<ColorSchemeChoice>('system');
 
-  // Fix: Ensure we only use 'light' or 'dark' by falling back to 'light'
-  const scheme: 'light' | 'dark' = 
-    choice === 'system' 
-      ? (systemScheme === 'dark' ? 'dark' : 'light')  // Handle null, 'unspecified', etc.
+  const scheme: 'light' | 'dark' =
+    choice === 'system'
+      ? systemScheme === 'dark'
+        ? 'dark'
+        : 'light'
       : choice;
 
-  // Fix: Use type assertion to tell TypeScript this is definitely ThemeColors
   const colors = useMemo<ThemeColors>(
     () => (scheme === 'dark' ? darkColors : lightColors) as ThemeColors,
-    [scheme]
+    [scheme],
   );
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    document.documentElement.dataset.colorScheme = scheme;
+    document.documentElement.style.colorScheme = scheme;
+  }, [scheme]);
 
   const value = useMemo<ThemeContextValue>(
     () => ({
@@ -215,7 +335,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       choice,
       setChoice,
     }),
-    [colors, scheme, choice]
+    [colors, scheme, choice],
   );
 
   return React.createElement(ThemeContext.Provider, { value }, children);

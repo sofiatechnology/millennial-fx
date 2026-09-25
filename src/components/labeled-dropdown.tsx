@@ -1,3 +1,4 @@
+import { shape, useAppTheme } from '@/constants/theme';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Menu, TextInput } from 'react-native-paper';
@@ -15,6 +16,7 @@ export function LabeledDropdown({
   options,
   onSelect,
 }: DropdownProps) {
+  const { colors } = useAppTheme();
   const [expanded, setExpanded] = useState(false);
   const [anchorWidth, setAnchorWidth] = useState(0);
 
@@ -23,7 +25,11 @@ export function LabeledDropdown({
       visible={expanded}
       onDismiss={() => setExpanded(false)}
       anchorPosition="bottom"
-      contentStyle={anchorWidth > 0 ? { width: anchorWidth } : undefined}
+      contentStyle={{
+        backgroundColor: colors.surfaceContainer,
+        borderRadius: shape.extraSmall,
+        ...(anchorWidth > 0 ? { width: anchorWidth } : null),
+      }}
       anchor={
         <View
           onLayout={(event) => {
@@ -37,7 +43,11 @@ export function LabeledDropdown({
               label={label}
               value={selectedLabel}
               editable={false}
-              right={<TextInput.Icon icon="menu-down" />}
+              outlineColor={colors.outline}
+              activeOutlineColor={colors.primary}
+              textColor={colors.onSurface}
+              outlineStyle={{ borderRadius: shape.extraSmall }}
+              right={<TextInput.Icon icon="menu-down" color={colors.onSurfaceVariant} />}
             />
           </View>
           <Pressable

@@ -13,12 +13,20 @@ export function ResultRow({
   valueColor: string;
 }) {
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-      <Text variant="bodySmall" selectable style={{ color: labelColor }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 12,
+        paddingVertical: 12,
+      }}
+    >
+      <Text variant="bodyLarge" selectable style={{ color: labelColor }}>
         {label}
       </Text>
       <Text
-        variant="bodySmall"
+        variant="bodyLarge"
         selectable
         style={{
           color: valueColor,

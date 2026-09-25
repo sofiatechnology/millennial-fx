@@ -1,3 +1,4 @@
+import { shape, useAppTheme } from '@/constants/theme';
 import { View } from 'react-native';
 import { HelperText, TextInput } from 'react-native-paper';
 
@@ -7,6 +8,7 @@ interface FieldProps {
   onChangeText: (value: string) => void;
   keyboardType: 'number-pad' | 'decimal-pad';
   error?: string;
+  supportingText?: string;
 }
 
 export function ValidatedField({
@@ -15,7 +17,11 @@ export function ValidatedField({
   onChangeText,
   keyboardType,
   error,
+  supportingText,
 }: FieldProps) {
+  const { colors } = useAppTheme();
+  const message = error ?? supportingText;
+
   return (
     <View>
       <TextInput
@@ -25,10 +31,14 @@ export function ValidatedField({
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         error={Boolean(error)}
+        outlineColor={colors.outline}
+        activeOutlineColor={colors.primary}
+        textColor={colors.onSurface}
+        outlineStyle={{ borderRadius: shape.extraSmall }}
       />
-      {error ? (
-        <HelperText type="error" visible selectable>
-          {error}
+      {message ? (
+        <HelperText type={error ? 'error' : 'info'} visible selectable>
+          {message}
         </HelperText>
       ) : null}
     </View>

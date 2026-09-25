@@ -1,7 +1,9 @@
+import { filledSurfaceStyle, useAppTheme } from '@/constants/theme';
 import { View } from 'react-native';
-import { Surface, Text, useTheme } from 'react-native-paper';
+import { Surface, Text } from 'react-native-paper';
 
 interface PriceDisplayProps {
+  pair: string;
   price: number | null;
   isLoading: boolean;
   lastUpdated: string;
@@ -9,34 +11,41 @@ interface PriceDisplayProps {
 }
 
 export function PriceDisplay({
+  pair,
   price,
   isLoading,
   lastUpdated,
   isFallback,
 }: PriceDisplayProps) {
-  const theme = useTheme();
+  const { colors } = useAppTheme();
+
+  const priceLabel = isLoading ? 'Loading...' : price ? price.toFixed(5) : 'N/A';
+  const status = isFallback && !isLoading && price ? 'Cached price' : null;
 
   return (
-    <Surface elevation={1} style={{ padding: 12, borderRadius: 12 }}>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-        <Text variant="titleMedium" selectable style={{ color: theme.colors.onSurface }}>
-          Live Price:
-        </Text>
-        <Text
-          variant="titleMedium"
-          selectable
-          style={{ color: theme.colors.primary, fontVariant: ['tabular-nums'] }}
-        >
-          {isLoading ? 'Loading...' : price ? price.toFixed(5) : 'N/A'}
-        </Text>
-        {isFallback && !isLoading && price ? (
-          <Text variant="bodySmall" selectable style={{ color: theme.colors.onSurfaceVariant }}>
-            (Fallback)
+    <Surface mode="flat" elevation={0} style={{ padding: 20, gap: 4, ...filledSurfaceStyle(colors) }}>
+      <Text variant="labelLarge" style={{ color: colors.onSurfaceVariant }}>
+        Live price
+      </Text>
+      <Text variant="titleMedium" selectable style={{ color: colors.onSurface }}>
+        {pair}
+      </Text>
+      <Text
+        variant="headlineMedium"
+        selectable
+        style={{ color: colors.primary, fontVariant: ['tabular-nums'] }}
+      >
+        {priceLabel}
+      </Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        {status ? (
+          <Text variant="bodySmall" selectable style={{ color: colors.onSurfaceVariant }}>
+            {status}
           </Text>
         ) : null}
         {lastUpdated ? (
-          <Text variant="bodySmall" selectable style={{ color: theme.colors.onSurfaceVariant }}>
-            Updated: {lastUpdated}
+          <Text variant="bodySmall" selectable style={{ color: colors.onSurfaceVariant }}>
+            {`Updated ${lastUpdated}`}
           </Text>
         ) : null}
       </View>

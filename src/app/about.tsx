@@ -1,8 +1,8 @@
-import { Divider, List, Surface, Text, useTheme } from 'react-native-paper';
+import { useAppTheme } from '@/constants/theme';
 import { Stack } from 'expo-router';
 import { Fragment } from 'react';
-import { Linking, ScrollView, Share as RNShare } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Linking, ScrollView, Share as RNShare, View } from 'react-native';
+import { Divider, List, Text } from 'react-native-paper';
 
 const APP_NAME = 'Lot Size Calculator';
 const APP_VERSION = '1.0.0';
@@ -23,6 +23,8 @@ const SUPPORT_ITEMS: SupportItem[] = [
     onSelect: () => {
       RNShare.share({
         message: `Check out ${APP_NAME} — a precision risk management tool for forex traders. ${PLAY_STORE_URL}`,
+      }).catch(() => {
+        Linking.openURL(PLAY_STORE_URL);
       });
     },
   },
@@ -50,70 +52,54 @@ const SUPPORT_ITEMS: SupportItem[] = [
 ];
 
 export default function AboutScreen() {
-  const theme = useTheme();
+  const { colors } = useAppTheme();
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'About',
-          headerBackTitle: 'Calculator',
-        }}
-      />
+      <Stack.Screen options={{ title: 'About' }} />
+      <ScrollView contentContainerStyle={{ paddingVertical: 8, gap: 4 }}>
+        <Text
+          variant="titleSmall"
+          selectable
+          style={{
+            color: colors.onSurfaceVariant,
+            paddingHorizontal: 16,
+            paddingTop: 16,
+            paddingBottom: 8,
+          }}
+        >
+          Support us
+        </Text>
 
-      <SafeAreaView
-        edges={['left', 'right', 'bottom']}
-        style={{ flex: 1, backgroundColor: theme.colors.background }}
-      >
-        <ScrollView contentContainerStyle={{ paddingVertical: 8, gap: 4 }}>
+        {SUPPORT_ITEMS.map((item, index) => (
+          <Fragment key={item.label}>
+            <List.Item
+              title={item.label}
+              onPress={item.onSelect}
+              titleStyle={{ color: colors.onSurface }}
+              left={(props) => (
+                <List.Icon {...props} icon={item.icon} color={colors.onSurfaceVariant} />
+              )}
+              right={(props) => (
+                <List.Icon {...props} icon="chevron-right" color={colors.onSurfaceVariant} />
+              )}
+            />
+            {index < SUPPORT_ITEMS.length - 1 ? (
+              <Divider style={{ backgroundColor: colors.outlineVariant }} />
+            ) : null}
+          </Fragment>
+        ))}
+
+        <View style={{ paddingTop: 24, paddingBottom: 20 }}>
           <Text
-            variant="titleMedium"
+            variant="bodySmall"
             selectable
-            style={{
-              color: theme.colors.onBackground,
-              fontWeight: '700',
-              paddingHorizontal: 20,
-              paddingTop: 16,
-              paddingBottom: 8,
-            }}
+            style={{ color: colors.onSurfaceVariant, textAlign: 'center' }}
           >
-            Support us
+            {`Version ${APP_VERSION}`}
           </Text>
-
-          {SUPPORT_ITEMS.map((item, index) => (
-            <Fragment key={item.label}>
-              <List.Item
-                title={item.label}
-                onPress={item.onSelect}
-                left={(props) => (
-                  <List.Icon {...props} icon={item.icon} color={theme.colors.primary} />
-                )}
-                right={(props) => (
-                  <List.Icon {...props} icon="chevron-right" color={theme.colors.onSurfaceVariant} />
-                )}
-              />
-              {index < SUPPORT_ITEMS.length - 1 ? <Divider /> : null}
-            </Fragment>
-          ))}
-
-          <Surface
-            elevation={0}
-            style={{
-              paddingTop: 12,
-              paddingBottom: 20,
-              backgroundColor: theme.colors.elevation.level1,
-            }}
-          >
-            <Text
-              variant="bodySmall"
-              selectable
-              style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}
-            >
-              {`Version ${APP_VERSION}`}
-            </Text>
-          </Surface>
-        </ScrollView>
-      </SafeAreaView>
+        </View>
+      </ScrollView>
     </>
   );
 }
