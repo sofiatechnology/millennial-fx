@@ -1,6 +1,5 @@
-import { Row, Text } from '@expo/ui/jetpack-compose';
-import { fillMaxWidth } from '@expo/ui/jetpack-compose/modifiers';
-
+import { View } from 'react-native';
+import { Text } from 'react-native-paper';
 
 export function ResultRow({
   label,
@@ -14,13 +13,21 @@ export function ResultRow({
   valueColor: string;
 }) {
   return (
-    <Row horizontalArrangement="spaceBetween" modifiers={[fillMaxWidth()]}>
-      <Text color={labelColor} style={{ typography: "bodySmall" }}>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
+      <Text variant="bodySmall" selectable style={{ color: labelColor }}>
         {label}
       </Text>
-      <Text color={valueColor} style={{ typography: "bodySmall", fontWeight: "500" }}>
+      <Text
+        variant="bodySmall"
+        selectable
+        style={{
+          color: valueColor,
+          fontWeight: '500',
+          fontVariant: ['tabular-nums'],
+        }}
+      >
         {value}
       </Text>
-    </Row>
+    </View>
   );
 }

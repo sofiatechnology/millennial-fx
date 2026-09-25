@@ -24,14 +24,14 @@ This is a learning project designed to teach developers how to build a modern Re
 - Local database persistence (SQLite)
 - Complex form validation and calculations
 - History tracking with status management
-- Clean, Google-style UI using Expo UI components
+- Clean, Google-style UI using React Native Paper
 
 # Tech Stack
 
 Use the following stack:
 
 - Expo (SDK 56+)
-- Expo UI (for component library - SwiftUI/Compose inspired)
+- React Native Paper (Material Design 3 component library)
 - React Native
 - TypeScript
 - Expo Router (file-based routing)
@@ -163,7 +163,8 @@ For any UI-related task:
 
 - The goal is to replicate the provided design exactly
 - Match the UI pixel-perfectly
-- Use Expo UI components exclusively
+- Use React Native Paper components for controls, typography, and surfaces
+- Use React Native `View` and `ScrollView` for layout
 - Follow Google Material Design guidelines
 
 When the user provides a design image, you MUST:
@@ -219,19 +220,21 @@ tsx
 
 <View style={{ boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)" }} />
 
-# Expo UI Components
+# React Native Paper
 
-Always use Expo UI components:
+Wrap the app in `PaperProvider` (see `src/app/_layout.tsx`) and theme it with `buildPaperTheme()` from `src/constants/theme.ts`.
 
-- Column, Row for layout
-- Text for typography
-- Button for actions
-- FieldGroup for form sections
-- TextInput for inputs
-- Picker for dropdowns
-- Host as root component
+Use React Native Paper for UI controls:
 
-Never use View, Text, TouchableOpacity, or other RN primitives when Expo UI equivalents exist.
+- `Text` for typography
+- `Button` for actions
+- `TextInput` and `HelperText` for form fields
+- `Menu` for dropdowns
+- `Surface` for elevated cards
+- `Dialog` and `Portal` for result dialogs
+- `List`, `Divider`, and `IconButton` for lists and header actions
+
+Use React Native `View` and `ScrollView` for layout. Do not use `@expo/ui`.
 
 # Database Schema
 
@@ -420,5 +423,5 @@ Before every feature implementation:
 - Follow it strictly
 - Build clean, simple, teachable code
 - Replicate UI exactly when designs are provided
-- Use Expo UI components exclusively
+- Use React Native Paper for UI controls
 - Follow the established architecture pattern

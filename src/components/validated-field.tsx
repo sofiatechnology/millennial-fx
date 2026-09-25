@@ -1,50 +1,36 @@
-// components/ValidatedField.tsx
-import {
-    Column,
-    ObservableState,
-    OutlinedTextField,
-    Text,
-} from "@expo/ui/jetpack-compose";
-import {
-    fillMaxWidth,
-    padding,
-} from "@expo/ui/jetpack-compose/modifiers";
+import { View } from 'react-native';
+import { HelperText, TextInput } from 'react-native-paper';
 
 interface FieldProps {
   label: string;
-  state: ObservableState<string>;
-  keyboardType: "number" | "decimal";
+  value: string;
+  onChangeText: (value: string) => void;
+  keyboardType: 'number-pad' | 'decimal-pad';
   error?: string;
-  errorColor: string;
 }
 
 export function ValidatedField({
   label,
-  state,
+  value,
+  onChangeText,
   keyboardType,
   error,
-  errorColor,
 }: FieldProps) {
   return (
-    <Column verticalArrangement={{ spacedBy: 4 }} modifiers={[fillMaxWidth()]}>
-      <OutlinedTextField
-        value={state}
-        keyboardOptions={{ keyboardType }}
-        modifiers={[fillMaxWidth()]}
-      >
-        <OutlinedTextField.Label>
-          <Text>{label}</Text>
-        </OutlinedTextField.Label>
-      </OutlinedTextField>
-      {error && (
-        <Text
-          color={errorColor}
-          style={{ typography: "bodySmall" }}
-          modifiers={[padding(4, 0, 0, 0)]}
-        >
+    <View>
+      <TextInput
+        mode="outlined"
+        label={label}
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        error={Boolean(error)}
+      />
+      {error ? (
+        <HelperText type="error" visible selectable>
           {error}
-        </Text>
-      )}
-    </Column>
+        </HelperText>
+      ) : null}
+    </View>
   );
 }

@@ -1,40 +1,25 @@
-import { seedColor, useAppTheme } from '@/constants/theme';
-import ChevronRight from "@expo/material-symbols/chevron_right.xml";
-import Feedback from "@expo/material-symbols/feedback.xml";
-import Policy from "@expo/material-symbols/policy.xml";
-import Share from "@expo/material-symbols/share.xml";
-import ThumbUp from "@expo/material-symbols/thumb_up.xml";
-import {
-  HorizontalDivider,
-  Host,
-  Icon,
-  LazyColumn,
-  ListItem,
-  Text,
-} from "@expo/ui/jetpack-compose";
-import { background, clickable, fillMaxWidth, padding } from "@expo/ui/jetpack-compose/modifiers";
-import { Stack } from "expo-router";
-import { Fragment } from "react";
-import { Linking, Share as RNShare } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Divider, List, Surface, Text, useTheme } from 'react-native-paper';
+import { Stack } from 'expo-router';
+import { Fragment } from 'react';
+import { Linking, ScrollView, Share as RNShare } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-// App metadata — wire these up to your real store listing / policy / etc.
-const APP_NAME = "Lot Size Calculator";
-const APP_VERSION = "1.0.0";
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=your.package.name";
-const FEEDBACK_EMAIL = "mailto:support@example.com?subject=Lot%20Size%20Calculator%20Feedback";
-const PRIVACY_POLICY_URL = "https://example.com/privacy";
+const APP_NAME = 'Lot Size Calculator';
+const APP_VERSION = '1.0.0';
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=your.package.name';
+const FEEDBACK_EMAIL = 'mailto:support@example.com?subject=Lot%20Size%20Calculator%20Feedback';
+const PRIVACY_POLICY_URL = 'https://example.com/privacy';
 
 interface SupportItem {
-  icon: any;
+  icon: string;
   label: string;
   onSelect: () => void;
 }
 
 const SUPPORT_ITEMS: SupportItem[] = [
   {
-    icon: Share,
-    label: "Share App",
+    icon: 'share-variant',
+    label: 'Share App',
     onSelect: () => {
       RNShare.share({
         message: `Check out ${APP_NAME} — a precision risk management tool for forex traders. ${PLAY_STORE_URL}`,
@@ -42,95 +27,92 @@ const SUPPORT_ITEMS: SupportItem[] = [
     },
   },
   {
-    icon: ThumbUp,
-    label: "Rate us",
+    icon: 'thumb-up-outline',
+    label: 'Rate us',
     onSelect: () => {
       Linking.openURL(PLAY_STORE_URL);
     },
   },
   {
-    icon: Feedback,
-    label: "Feedback",
+    icon: 'message-text-outline',
+    label: 'Feedback',
     onSelect: () => {
       Linking.openURL(FEEDBACK_EMAIL);
     },
   },
   {
-    icon: Policy,
-    label: "Privacy Policy",
+    icon: 'shield-account-outline',
+    label: 'Privacy Policy',
     onSelect: () => {
       Linking.openURL(PRIVACY_POLICY_URL);
     },
   },
 ];
 
-// ─── Screen ──────────────────────────────────────────────────────────────────
-
 export default function AboutScreen() {
-  const { colors, scheme } = useAppTheme();
+  const theme = useTheme();
 
   return (
     <>
       <Stack.Screen
         options={{
-          title: "About",
-          headerBackTitle: "Calculator",
+          title: 'About',
+          headerBackTitle: 'Calculator',
         }}
       />
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <Host style={{ flex: 1 }} colorScheme={scheme} seedColor={seedColor}>
-          <LazyColumn modifiers={[fillMaxWidth()]}>
-            <Text
-              color={colors.onBackground}
-              style={{ typography: "titleMedium", fontWeight: "700" }}
-              modifiers={[padding(20, 24, 20, 8)]}
-            >
-              Support us
-            </Text>
+      <SafeAreaView
+        edges={['left', 'right', 'bottom']}
+        style={{ flex: 1, backgroundColor: theme.colors.background }}
+      >
+        <ScrollView contentContainerStyle={{ paddingVertical: 8, gap: 4 }}>
+          <Text
+            variant="titleMedium"
+            selectable
+            style={{
+              color: theme.colors.onBackground,
+              fontWeight: '700',
+              paddingHorizontal: 20,
+              paddingTop: 16,
+              paddingBottom: 8,
+            }}
+          >
+            Support us
+          </Text>
 
-            {SUPPORT_ITEMS.map((item, index) => (
-              <Fragment key={item.label}>
-                <ListItem modifiers={[clickable(item.onSelect), fillMaxWidth()]}>
-                  <ListItem.LeadingContent>
-                    <Icon source={item.icon} size={22} tint={colors.primary} />
-                  </ListItem.LeadingContent>
-                  <ListItem.HeadlineContent>
-                    <Text style={{ typography: "bodyLarge" }}>{item.label}</Text>
-                  </ListItem.HeadlineContent>
-                  <ListItem.TrailingContent>
-                    <Icon
-                      source={ChevronRight}
-                      size={20}
-                      tint={colors.onSurfaceVariant}
-                    />
-                  </ListItem.TrailingContent>
-                </ListItem>
-                {index < SUPPORT_ITEMS.length - 1 && (
-                  <HorizontalDivider color={colors.outlineVariant} />
+          {SUPPORT_ITEMS.map((item, index) => (
+            <Fragment key={item.label}>
+              <List.Item
+                title={item.label}
+                onPress={item.onSelect}
+                left={(props) => (
+                  <List.Icon {...props} icon={item.icon} color={theme.colors.primary} />
                 )}
-              </Fragment>
-            ))}
+                right={(props) => (
+                  <List.Icon {...props} icon="chevron-right" color={theme.colors.onSurfaceVariant} />
+                )}
+              />
+              {index < SUPPORT_ITEMS.length - 1 ? <Divider /> : null}
+            </Fragment>
+          ))}
 
-            <ListItem
-              modifiers={[
-                fillMaxWidth(),
-                background(colors.surfaceContainer),
-                padding(0, 20, 0, 20),
-              ]}
+          <Surface
+            elevation={0}
+            style={{
+              paddingTop: 12,
+              paddingBottom: 20,
+              backgroundColor: theme.colors.elevation.level1,
+            }}
+          >
+            <Text
+              variant="bodySmall"
+              selectable
+              style={{ color: theme.colors.onSurfaceVariant, textAlign: 'center' }}
             >
-              <ListItem.HeadlineContent>
-                <Text
-                  color={colors.onSurfaceVariant}
-                  style={{ typography: "bodySmall", textAlign: "center" }}
-                  modifiers={[fillMaxWidth()]}
-                >
-                  {`Version ${APP_VERSION}`}
-                </Text>
-              </ListItem.HeadlineContent>
-            </ListItem>
-          </LazyColumn>
-        </Host>
+              {`Version ${APP_VERSION}`}
+            </Text>
+          </Surface>
+        </ScrollView>
       </SafeAreaView>
     </>
   );

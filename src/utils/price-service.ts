@@ -48,7 +48,6 @@ export class PriceService {
 
     try {
       // Try to fetch from API
-      const cleanPair = pair.replace('/', '');
       const base = pair.split('/')[0];
       const quote = pair.split('/')[1];
 
@@ -61,7 +60,11 @@ export class PriceService {
         timeout: 5000, // 5 second timeout
       });
 
-      const price = response.data.result;
+      const price = response.data?.result;
+      if (typeof price !== 'number' || !Number.isFinite(price)) {
+        throw new Error('Price response was not a number');
+      }
+
       const data: PriceData = {
         pair,
         price,

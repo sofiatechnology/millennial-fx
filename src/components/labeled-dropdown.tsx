@@ -1,21 +1,10 @@
-// components/LabeledDropdown.tsx
-import {
-    DropdownMenuItem,
-    ExposedDropdownMenu,
-    ExposedDropdownMenuBox,
-    ObservableState,
-    OutlinedTextField,
-    Text,
-} from "@expo/ui/jetpack-compose";
-import {
-    fillMaxWidth,
-    menuAnchor,
-} from "@expo/ui/jetpack-compose/modifiers";
-import { useState } from "react";
+import { useState } from 'react';
+import { Pressable, View } from 'react-native';
+import { Menu, TextInput } from 'react-native-paper';
 
 interface DropdownProps {
   label: string;
-  selectedLabel: ObservableState<string>;
+  selectedLabel: string;
   options: string[];
   onSelect: (value: string) => void;
 }
@@ -27,40 +16,49 @@ export function LabeledDropdown({
   onSelect,
 }: DropdownProps) {
   const [expanded, setExpanded] = useState(false);
+  const [anchorWidth, setAnchorWidth] = useState(0);
 
   return (
-    <ExposedDropdownMenuBox
-      expanded={expanded}
-      onExpandedChange={setExpanded}
-      modifiers={[fillMaxWidth()]}
+    <Menu
+      visible={expanded}
+      onDismiss={() => setExpanded(false)}
+      anchorPosition="bottom"
+      contentStyle={anchorWidth > 0 ? { width: anchorWidth } : undefined}
+      anchor={
+        <View
+          onLayout={(event) => {
+            const width = event.nativeEvent.layout.width;
+            setAnchorWidth((current) => (current === width ? current : width));
+          }}
+        >
+          <View style={{ pointerEvents: 'none' }}>
+            <TextInput
+              mode="outlined"
+              label={label}
+              value={selectedLabel}
+              editable={false}
+              right={<TextInput.Icon icon="menu-down" />}
+            />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            onPress={() => setExpanded(true)}
+            style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }}
+          />
+        </View>
+      }
     >
-      <OutlinedTextField
-        value={selectedLabel}
-        readOnly
-        modifiers={[menuAnchor(), fillMaxWidth()]}
-      >
-        <OutlinedTextField.Label>
-          <Text>{label}</Text>
-        </OutlinedTextField.Label>
-      </OutlinedTextField>
-      <ExposedDropdownMenu
-        expanded={expanded}
-        onDismissRequest={() => setExpanded(false)}
-      >
-        {options.map((opt) => (
-          <DropdownMenuItem
-            key={opt}
-            onClick={() => {
-              onSelect(opt);
-              setExpanded(false);
-            }}
-          >
-            <DropdownMenuItem.Text>
-              <Text>{opt}</Text>
-            </DropdownMenuItem.Text>
-          </DropdownMenuItem>
-        ))}
-      </ExposedDropdownMenu>
-    </ExposedDropdownMenuBox>
+      {options.map((option) => (
+        <Menu.Item
+          key={option}
+          title={option}
+          onPress={() => {
+            onSelect(option);
+            setExpanded(false);
+          }}
+        />
+      ))}
+    </Menu>
   );
 }

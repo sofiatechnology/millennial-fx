@@ -1,7 +1,7 @@
 // hooks/useCalculator.ts
 import { useState } from "react";
 
-interface CalculationResult {
+export interface CalculationResult {
   lotSize: number;
   unitsToTrade: number;
   riskAmount: number;
@@ -35,6 +35,9 @@ export function useCalculator() {
       e.unitsToTrade = "Enter a valid number of units";
     
     setErrors(e);
+    if (Object.keys(e).length > 0) {
+      setResult(null);
+    }
     return Object.keys(e).length === 0;
   };
 
@@ -58,25 +61,29 @@ export function useCalculator() {
       const riskPerLot = parseFloat(stopLossPips) * pipValue;
       const riskAmount = lotSize * riskPerLot;
 
-      return {
+      const nextResult: CalculationResult = {
         lotSize: Math.round(lotSize * 100) / 100,
         unitsToTrade: Math.round(parsedUnits),
         riskAmount: Math.round(riskAmount * 100) / 100,
         pipValue: Math.round(pipValue * 100) / 100,
         price: currentPrice,
       };
+      setResult(nextResult);
+      return nextResult;
     }
 
     const riskAmount = (parseFloat(accountBalance) * parseFloat(riskPercent)) / 100;
     const lots = riskAmount / (parseFloat(stopLossPips) * pipValue);
 
-    return {
+    const nextResult: CalculationResult = {
       lotSize: Math.round(lots * 100) / 100,
       unitsToTrade: Math.round(lots * 100_000),
       riskAmount: Math.round(riskAmount * 100) / 100,
       pipValue: Math.round(pipValue * 100) / 100,
       price: currentPrice,
     };
+    setResult(nextResult);
+    return nextResult;
   };
 
   const reset = () => {

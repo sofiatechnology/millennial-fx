@@ -1,24 +1,18 @@
 /**
  * theme.ts
- * Single source of truth for app theming, generated from your
+ * Single source of truth for app theming, generated from the
  * Material Theme Builder export (seed #35668E).
  *
- * - `lightColors` / `darkColors` -> use anywhere in plain React Native
- *   (StyleSheet, inline styles, styled-components, NativeWind, etc.)
- * - `seedColor` -> pass to <Host seedColor={seedColor} .../> from
- *   @expo/ui/jetpack-compose so native Compose widgets (Android) are
- *   seeded from the SAME color and stay visually consistent with the
- *   rest of your app.
+ * - `lightColors` / `darkColors` -> use in React Native styles.
+ * - `buildPaperTheme()` -> Material 3 theme for React Native Paper.
  * - `useAppTheme()` -> hook that returns the right palette for the
  *   current color scheme, with manual override support.
  */
 
 import React, { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
+import { MD3DarkTheme, MD3LightTheme, type MD3Theme } from 'react-native-paper';
 
-// -----------------------------------------------------------------------
-// 1. Seed color (also feed this to @expo/ui's <Host seedColor="..."/>)
-// -----------------------------------------------------------------------
 export const seedColor = '#35668E';
 
 // -----------------------------------------------------------------------
@@ -130,6 +124,58 @@ export const darkColors = {
 
 export type ThemeColors = typeof lightColors;
 export type ColorSchemeChoice = 'light' | 'dark' | 'system';
+
+/** Map the app palette onto React Native Paper's Material 3 theme. */
+export function buildPaperTheme(
+  scheme: 'light' | 'dark',
+  colors: ThemeColors,
+): MD3Theme {
+  const base = scheme === 'dark' ? MD3DarkTheme : MD3LightTheme;
+
+  return {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: colors.primary,
+      onPrimary: colors.onPrimary,
+      primaryContainer: colors.primaryContainer,
+      onPrimaryContainer: colors.onPrimaryContainer,
+      secondary: colors.secondary,
+      onSecondary: colors.onSecondary,
+      secondaryContainer: colors.secondaryContainer,
+      onSecondaryContainer: colors.onSecondaryContainer,
+      tertiary: colors.tertiary,
+      onTertiary: colors.onTertiary,
+      tertiaryContainer: colors.tertiaryContainer,
+      onTertiaryContainer: colors.onTertiaryContainer,
+      error: colors.error,
+      onError: colors.onError,
+      errorContainer: colors.errorContainer,
+      onErrorContainer: colors.onErrorContainer,
+      background: colors.background,
+      onBackground: colors.onBackground,
+      surface: colors.surface,
+      onSurface: colors.onSurface,
+      surfaceVariant: colors.surfaceVariant,
+      onSurfaceVariant: colors.onSurfaceVariant,
+      outline: colors.outline,
+      outlineVariant: colors.outlineVariant,
+      shadow: colors.shadow,
+      scrim: colors.scrim,
+      inverseSurface: colors.inverseSurface,
+      inverseOnSurface: colors.inverseOnSurface,
+      inversePrimary: colors.inversePrimary,
+      elevation: {
+        level0: 'transparent',
+        level1: colors.surfaceContainerLow,
+        level2: colors.surfaceContainer,
+        level3: colors.surfaceContainerHigh,
+        level4: colors.surfaceContainerHigh,
+        level5: colors.surfaceContainerHighest,
+      },
+    },
+  };
+}
 
 // -----------------------------------------------------------------------
 // 3. Context + provider so any screen/component can read the theme and
