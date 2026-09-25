@@ -3,6 +3,7 @@ import { Icon } from 'react-native-paper';
 
 const NATIVE_ICONS = {
   calculate: 'calculator-variant-outline',
+  newspaper: 'newspaper-variant-outline',
   palette: 'palette-outline',
   info: 'information-outline',
   currency_exchange: 'swap-horizontal',

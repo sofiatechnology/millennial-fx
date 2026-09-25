@@ -17,6 +17,12 @@ export const destinations: Destination[] = [
     symbol: 'calculate',
   },
   {
+    href: '/news',
+    label: 'News',
+    title: 'News',
+    symbol: 'newspaper',
+  },
+  {
     href: '/settings',
     label: 'Appearance',
     title: 'Appearance',

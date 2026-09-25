@@ -49,16 +49,20 @@ export function AppShell({ children }: AppShellProps) {
   const showSideNav = navLayout !== 'bar';
 
   const openDestination = (href: (typeof destinations)[number]['href']) => {
+    if (pathname === '/news' && href !== '/news') {
+      setQuery('');
+    }
     if (!isDestinationActive(pathname, href)) {
       router.push(href);
     }
   };
 
+  const onNews = pathname === '/news';
+
   const onChangeQuery = (value: string) => {
     setQuery(value);
-    if (pathname !== '/' && pathname !== '/index') {
-      router.push('/');
-    }
+    if (onNews || pathname === '/' || pathname === '/index') return;
+    router.push('/');
   };
 
   return (
@@ -88,7 +92,7 @@ export function AppShell({ children }: AppShellProps) {
           }}
         >
           <Searchbar
-            placeholder="Search currency pairs"
+            placeholder={onNews ? 'Search news' : 'Search currency pairs'}
             value={query}
             onChangeText={onChangeQuery}
             elevation={0}
